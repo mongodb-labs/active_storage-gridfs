@@ -1,3 +1,4 @@
+require "active_storage/engine"
 module ActiveStorage
   module Gridfs
     class Engine < ::Rails::Engine

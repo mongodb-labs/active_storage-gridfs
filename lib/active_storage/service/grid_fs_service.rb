@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-
+require "active_storage"
+require "active_storage/service"
 module ActiveStorage
   class Service::GridFSService < Service
 
