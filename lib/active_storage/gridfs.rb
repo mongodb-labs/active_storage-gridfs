@@ -1,10 +1,5 @@
 # frozen_string_literal: true
 
 require_relative "gridfs/version"
-
-module ActiveStorage
-  module Gridfs
-    class Error < StandardError; end
-    # Your code goes here...
-  end
-end
+require "active_storage/service/grid_fs_service"
+require "active_storage/gridfs/engine"
