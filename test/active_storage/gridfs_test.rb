@@ -2,7 +2,7 @@
 
 require "active_storage/shared_service_tests"
 require "mongo"
-class ActiveStorage::Service::PostgreSQLServiceTest < ActiveSupport::TestCase
+class ActiveStorage::Service::GridFSServiceTest < ActiveSupport::TestCase
   SERVICE  = ActiveStorage::Service.configure(:gridfs, {gridfs: {service: "GridFS", uri: "mongodb://localhost:27017", database: "sandbox"}})
 
   setup do
