@@ -1,0 +1,13 @@
+<div id="<%= dom_id post %>">
+  <div>
+    <strong>Title:</strong>
+    <%= post.title %>
+    <strong>File:</strong>
+    <% if post.file.attached? %>
+      <%= link_to post.file.filename, rails_blob_path(post.file, disposition: "attachment") %>
+    <% else %>
+      No file uploaded.
+    <% end %>
+  </div>
+
+</div>

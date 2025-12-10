@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "active_storage"
 require "active_storage/service"
+
 module ActiveStorage
   # This service is for interacting with files in a MongoDB GridFS storage.
   class Service::GridFSService < Service
@@ -24,8 +25,17 @@ module ActiveStorage
     # @param **options Additional metadata options.
     def upload(key, io, checksum: nil, **options)
       instrument :upload, key: key, checksum: checksum do
+        if checksum.present?
+          actual_checksum = Digest::MD5.base64digest(io.read)
+          io.rewind
+          unless checksum == actual_checksum
+            # Integrity check failed
+            raise ActiveStorage::IntegrityError, "Active Storage checksum mismatch: #{checksum} (expected) vs #{actual_checksum} (actual)"
+          end
+        end
         blob = ActiveStorage::Blob.find_by(key: key)
-        metadata = { original_filename: blob.filename.to_s }
+        metadata = {}
+        metadata[:original_filename] = blob.filename.to_s if blob&.filename
         metadata.merge!(options[:metadata]) if options[:metadata].present?
         @fs_bucket.upload_from_stream(key, io, metadata: metadata)
       end
@@ -35,11 +45,31 @@ module ActiveStorage
     #
     # @param [ String ] key The identifier for the file.
     # @return [ String ] The file data.
-    def download(key)
+    def download(key, &block)
       instrument :download, key: key do
-        @fs_bucket.open_download_stream_by_name(key) do |stream|
-          return stream.read
+        if block_given?
+          instrument :streaming_download, key: key do
+            stream(key, &block)
+          end
+        else
+          @fs_bucket.open_download_stream_by_name(key) do |stream|
+            return stream.read
+          end
         end
+      end
+    end
+
+    # Reads the object for the given key in chunks, yielding each to the block.
+    def stream(key)
+      object = @fs_bucket.find(filename: key).first
+
+      chunk = 5.megabytes
+      offset = 0
+      while offset < object[:length]
+        range_end = [offset + chunk - 1, object[:length] - 1].min
+        range = offset..range_end
+        yield download_chunk(key, range)
+        offset += chunk
       end
     end
 
