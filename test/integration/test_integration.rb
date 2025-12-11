@@ -1,5 +1,5 @@
 require "test_helper"
-  
+
 class EngineIntegrationTest < ActionDispatch::IntegrationTest
   test "engine allows a post to be created" do
     visit "/posts/new"

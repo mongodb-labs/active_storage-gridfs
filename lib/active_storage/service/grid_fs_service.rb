@@ -99,12 +99,12 @@ module ActiveStorage
     # Deletes files in GridFS with a filename prefix.
     #
     # @param [ String ] prefix The prefix used to identify files.
-    def delete_prefixed(prefix)  
-      instrument :delete_prefixed, prefix: prefix do  
-        @fs_bucket.find(filename: { "$regex" => /^#{Regexp.escape(prefix)}/ }).each do |file|  
-          @fs_bucket.delete(file[:_id])  
-        end  
-      end  
+    def delete_prefixed(prefix)
+      instrument :delete_prefixed, prefix: prefix do
+        @fs_bucket.find(filename: { "$regex" => /^#{Regexp.escape(prefix)}/ }).each do |file|
+          @fs_bucket.delete(file[:_id])
+        end
+      end
     end
 
     # Checks if a file exists in GridFS.
