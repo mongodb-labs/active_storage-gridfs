@@ -3,7 +3,7 @@
 # Controller for handling requests to ActiveStorage objects stored in GridFS.
 class ActiveStorage::GridfsController < ActiveStorage::BaseController
   skip_forgery_protection
-  
+
   # Show the file referenced by the encoded key in GridFS.
   #
   # Responds with the requested file/partial content.

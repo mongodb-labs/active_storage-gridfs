@@ -80,16 +80,28 @@ GEM
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
       uri (>= 0.13.1)
+    addressable (2.8.8)
+      public_suffix (>= 2.0.2, < 8.0)
     base64 (0.2.0)
     benchmark (0.4.0)
     bigdecimal (3.1.9)
     bson (5.0.2)
     builder (3.3.0)
+    capybara (3.40.0)
+      addressable
+      matrix
+      mini_mime (>= 0.1.3)
+      nokogiri (~> 1.11)
+      rack (>= 1.6.0)
+      rack-test (>= 0.6.3)
+      regexp_parser (>= 1.5, < 3.0)
+      xpath (~> 3.2)
     concurrent-ruby (1.3.5)
     connection_pool (2.5.0)
     crass (1.0.6)
-    date (3.4.1)
+    date (3.5.1)
     drb (2.2.1)
+    erb (6.0.0)
     erubi (1.13.1)
     globalid (1.2.1)
       activesupport (>= 6.1)
@@ -109,6 +121,7 @@ GEM
       net-pop
       net-smtp
     marcel (1.0.4)
+    matrix (0.4.3)
     mini_mime (1.1.5)
     minitest (5.25.4)
     mongo (2.21.0)
@@ -139,9 +152,12 @@ GEM
       racc (~> 1.4)
     nokogiri (1.18.1-x86_64-linux-musl)
       racc (~> 1.4)
-    psych (5.2.2)
+    psych (5.3.0)
       date
       stringio
+    public_suffix (7.0.0)
+    puma (7.1.0)
+      nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.1.8)
     rack-session (2.1.0)
@@ -181,14 +197,26 @@ GEM
       thor (~> 1.0, >= 1.2.2)
       zeitwerk (~> 2.6)
     rake (13.2.1)
-    rdoc (6.11.0)
+    rdoc (6.17.0)
+      erb
       psych (>= 4.0.0)
+      tsort
+    regexp_parser (2.11.3)
     reline (0.6.0)
       io-console (~> 0.5)
     securerandom (0.4.1)
-    stringio (3.1.2)
+    sqlite3 (2.8.1-aarch64-linux-gnu)
+    sqlite3 (2.8.1-aarch64-linux-musl)
+    sqlite3 (2.8.1-arm-linux-gnu)
+    sqlite3 (2.8.1-arm-linux-musl)
+    sqlite3 (2.8.1-arm64-darwin)
+    sqlite3 (2.8.1-x86_64-darwin)
+    sqlite3 (2.8.1-x86_64-linux-gnu)
+    sqlite3 (2.8.1-x86_64-linux-musl)
+    stringio (3.1.9)
     thor (1.3.2)
     timeout (0.4.3)
+    tsort (0.2.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     uri (1.0.2)
@@ -197,6 +225,8 @@ GEM
       base64
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
+    xpath (3.2.0)
+      nokogiri (~> 1.8)
     zeitwerk (2.7.1)
 
 PLATFORMS
@@ -211,8 +241,12 @@ PLATFORMS
 
 DEPENDENCIES
   active_storage-gridfs!
+  capybara
   minitest (~> 5.16)
+  mongo
+  puma
   rake (~> 13.0)
+  sqlite3
 
 BUNDLED WITH
    2.6.1

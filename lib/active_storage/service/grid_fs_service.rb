@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 require "active_storage"
 require "active_storage/service"
+require "active_support/core_ext/numeric/bytes"
+
 module ActiveStorage
   # This service is for interacting with files in a MongoDB GridFS storage.
   class Service::GridFSService < Service
+    STREAM_CHUNK_SIZE = 5.megabytes
 
     # Initializes a new GridFSService.
     #
@@ -24,8 +27,9 @@ module ActiveStorage
     # @param **options Additional metadata options.
     def upload(key, io, checksum: nil, **options)
       instrument :upload, key: key, checksum: checksum do
+        verify_checksum(io, checksum) if checksum.present?
         blob = ActiveStorage::Blob.find_by(key: key)
-        metadata = { original_filename: blob.filename.to_s }
+        metadata = blob&.filename ? { original_filename: blob.filename.to_s } : {}
         metadata.merge!(options[:metadata]) if options[:metadata].present?
         @fs_bucket.upload_from_stream(key, io, metadata: metadata)
       end
@@ -35,11 +39,30 @@ module ActiveStorage
     #
     # @param [ String ] key The identifier for the file.
     # @return [ String ] The file data.
-    def download(key)
+    def download(key, &block)
       instrument :download, key: key do
-        @fs_bucket.open_download_stream_by_name(key) do |stream|
-          return stream.read
+        if block_given?
+          download_and_stream(key, &block)
+        else
+          download_and_return(key)
         end
+      end
+    end
+
+    # Reads the object for the given key in chunks, yielding each to the block.
+    # 
+    # @param [ String ] key The identifier for the file.
+    # 
+    # @yield [ String ] chunk The chunk of data read from the file.
+    def stream(key)
+      object = @fs_bucket.find(filename: key).first
+
+      offset = 0
+      while offset < object[:length]
+        range_end = [offset + STREAM_CHUNK_SIZE - 1, object[:length] - 1].min
+        range = offset..range_end
+        yield download_chunk(key, range)
+        offset += STREAM_CHUNK_SIZE
       end
     end
 
@@ -70,12 +93,12 @@ module ActiveStorage
     # Deletes files in GridFS with a filename prefix.
     #
     # @param [ String ] prefix The prefix used to identify files.
-    def delete_prefixed(prefix)  
-      instrument :delete_prefixed, prefix: prefix do  
-        @fs_bucket.find(filename: { "$regex" => /^#{Regexp.escape(prefix)}/ }).each do |file|  
-          @fs_bucket.delete(file[:_id])  
-        end  
-      end  
+    def delete_prefixed(prefix)
+      instrument :delete_prefixed, prefix: prefix do
+        @fs_bucket.find(filename: { "$regex" => /^#{Regexp.escape(prefix)}/ }).each do |file|
+          @fs_bucket.delete(file[:_id])
+        end
+      end
     end
 
     # Checks if a file exists in GridFS.
@@ -217,6 +240,35 @@ module ActiveStorage
         ActiveStorage::Current.url_options
       else
         { host: ActiveStorage::Current.host }
+      end
+    end
+
+    private
+
+    # Verifies the checksum of the uploaded file.
+    # 
+    # @param [ IO ] io The IO object containing the file data.
+    # @param [ String ] checksum The expected checksum.
+    # 
+    # @raise [ ActiveStorage::IntegrityError ] If the checksum does not match.
+    def verify_checksum(io, checksum)
+      actual_checksum = Digest::MD5.base64digest(io.read)
+      io.rewind
+      unless checksum == actual_checksum
+        # Integrity check failed
+        raise ActiveStorage::IntegrityError, "Active Storage checksum mismatch: #{checksum} (expected) vs #{actual_checksum} (actual)"
+      end
+    end
+
+    def download_and_stream(key, &block)
+      instrument :download, key: key do
+        stream(key, &block)
+      end
+    end
+
+    def download_and_return(key)
+      @fs_bucket.open_download_stream_by_name(key) do |stream|
+        return stream.read
       end
     end
   end

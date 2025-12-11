@@ -8,3 +8,9 @@ gemspec
 gem "rake", "~> 13.0"
 
 gem "minitest", "~> 5.16"
+
+# For testing with a dummy Rails app
+gem "puma"
+gem "sqlite3"
+gem "mongo"
+gem "capybara"
