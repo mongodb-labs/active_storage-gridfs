@@ -5,6 +5,7 @@ require "active_storage/service"
 module ActiveStorage
   # This service is for interacting with files in a MongoDB GridFS storage.
   class Service::GridFSService < Service
+    STREAM_CHUNK_SIZE = 5.megabytes
 
     # Initializes a new GridFSService.
     #
@@ -26,12 +27,7 @@ module ActiveStorage
     def upload(key, io, checksum: nil, **options)
       instrument :upload, key: key, checksum: checksum do
         if checksum.present?
-          actual_checksum = Digest::MD5.base64digest(io.read)
-          io.rewind
-          unless checksum == actual_checksum
-            # Integrity check failed
-            raise ActiveStorage::IntegrityError, "Active Storage checksum mismatch: #{checksum} (expected) vs #{actual_checksum} (actual)"
-          end
+          verify_checksum(io, checksum)
         end
         blob = ActiveStorage::Blob.find_by(key: key)
         metadata = blob&.filename ? { original_filename: blob.filename.to_s } : {}
@@ -47,28 +43,27 @@ module ActiveStorage
     def download(key, &block)
       instrument :download, key: key do
         if block_given?
-          instrument :streaming_download, key: key do
-            stream(key, &block)
-          end
+          download_and_stream(key, &block)
         else
-          @fs_bucket.open_download_stream_by_name(key) do |stream|
-            return stream.read
-          end
+          download_and_return(key)
         end
       end
     end
 
     # Reads the object for the given key in chunks, yielding each to the block.
+    # 
+    # @param [ String ] key The identifier for the file.
+    # 
+    # @yield [ String ] chunk The chunk of data read from the file.
     def stream(key)
       object = @fs_bucket.find(filename: key).first
 
-      chunk = 5.megabytes
       offset = 0
       while offset < object[:length]
-        range_end = [offset + chunk - 1, object[:length] - 1].min
+        range_end = [offset + STREAM_CHUNK_SIZE - 1, object[:length] - 1].min
         range = offset..range_end
         yield download_chunk(key, range)
-        offset += chunk
+        offset += STREAM_CHUNK_SIZE
       end
     end
 
@@ -246,6 +241,35 @@ module ActiveStorage
         ActiveStorage::Current.url_options
       else
         { host: ActiveStorage::Current.host }
+      end
+    end
+
+    private
+
+    # Verifies the checksum of the uploaded file.
+    # 
+    # @param [ IO ] io The IO object containing the file data.
+    # @param [ String ] checksum The expected checksum.
+    # 
+    # @raise [ ActiveStorage::IntegrityError ] If the checksum does not match.
+    def verify_checksum(io, checksum)
+      actual_checksum = Digest::MD5.base64digest(io.read)
+      io.rewind
+      unless checksum == actual_checksum
+        # Integrity check failed
+        raise ActiveStorage::IntegrityError, "Active Storage checksum mismatch: #{checksum} (expected) vs #{actual_checksum} (actual)"
+      end
+    end
+
+    def download_and_stream(key, &block)
+      instrument :download, key: key do
+        stream(key, &block)
+      end
+    end
+
+    def download_and_return(key)
+      @fs_bucket.open_download_stream_by_name(key) do |stream|
+        return stream.read
       end
     end
   end

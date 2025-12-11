@@ -2,29 +2,7 @@
 
 This gem is an adapter for MongoDB's GridFS use with ActiveStorage. It allows GridFS to be used similarly to AWS S3 or Google Cloud Storage Service for file storage and querying through ActiveStorage.
 
-** Please note that Active Storage is not compatible with `mongoid` at this time. **
-
-## Installation
-
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add active_storage-gridfs mongo
-```
-
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-```bash
-gem install active_storage-gridfs
-gem install mongo
-```
-
-Or, add the following to your Gemfile:
-
-```
-gem active_storage-gridfs
-gem mongo
-```
+Active Storage has a hard dependency on ActiveRecord and thus is not compatible with Mongoid at this time. This gem only lets Active Storage use MongoDB as a file store, not as a data store.
 
 ## Usage
 
@@ -59,4 +37,4 @@ bin/rails db:migrate
 
 Then, run `bundle exec rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`.
