@@ -1,7 +1,7 @@
-require "test_helper"  
+require "test_helper"
   
-class EngineIntegrationTest < ActionDispatch::IntegrationTest  
-  test "engine allows a post to be created" do  
+class EngineIntegrationTest < ActionDispatch::IntegrationTest
+  test "engine allows a post to be created" do
     visit "/posts/new"
     fill_in "Title", with: "My First Post"
     attach_file "File", Rails.root.join("../fixtures/files/sample.txt")
@@ -13,9 +13,9 @@ class EngineIntegrationTest < ActionDispatch::IntegrationTest
     # download the file and check its contents
     click_link "sample.txt"
     assert_equal "This is a sample file for testing Active Storage GridFS.\n", page.body
-  end  
+  end
 
-  test "engine allows a post to be updated" do  
+  test "engine allows a post to be updated" do
     post = Post.create!(title: "Old Title")
     visit "/posts/#{post.id}/edit"
     fill_in "Title", with: "Updated Title"
@@ -27,4 +27,4 @@ class EngineIntegrationTest < ActionDispatch::IntegrationTest
     click_link "sample.txt"
     assert_equal "This is a sample file for testing Active Storage GridFS.\n", page.body
   end
-end  
+end

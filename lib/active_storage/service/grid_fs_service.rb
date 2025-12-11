@@ -34,8 +34,7 @@ module ActiveStorage
           end
         end
         blob = ActiveStorage::Blob.find_by(key: key)
-        metadata = {}
-        metadata[:original_filename] = blob.filename.to_s if blob&.filename
+        metadata = blob&.filename ? { original_filename: blob.filename.to_s } : {}
         metadata.merge!(options[:metadata]) if options[:metadata].present?
         @fs_bucket.upload_from_stream(key, io, metadata: metadata)
       end
