@@ -27,9 +27,7 @@ module ActiveStorage
     # @param **options Additional metadata options.
     def upload(key, io, checksum: nil, **options)
       instrument :upload, key: key, checksum: checksum do
-        if checksum.present?
-          verify_checksum(io, checksum)
-        end
+        verify_checksum(io, checksum) if checksum.present?
         blob = ActiveStorage::Blob.find_by(key: key)
         metadata = blob&.filename ? { original_filename: blob.filename.to_s } : {}
         metadata.merge!(options[:metadata]) if options[:metadata].present?
