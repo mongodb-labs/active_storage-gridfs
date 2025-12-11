@@ -9,13 +9,21 @@ This gem is an adapter for MongoDB's GridFS use with ActiveStorage. It allows Gr
 Install the gem and add to the application's Gemfile by executing:
 
 ```bash
-bundle add active_storage-gridfs
+bundle add active_storage-gridfs mongo
 ```
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
 ```bash
 gem install active_storage-gridfs
+gem install mongo
+```
+
+Or, add the following to your Gemfile:
+
+```
+gem active_storage-gridfs
+gem mongo
 ```
 
 ## Usage
