@@ -1,35 +1,44 @@
 # ActiveStorage::Gridfs
 
-TODO: Delete this and the text below, and describe your gem
+This gem is an adapter for MongoDB's GridFS use with ActiveStorage. It allows GridFS to be used similarly to AWS S3 or Google Cloud Storage Service for file storage and querying through ActiveStorage.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/active_storage/gridfs`. To experiment with that code, run `bin/console` for an interactive prompt.
+** Please note that Active Storage is not compatible with `mongoid` at this time. **
 
 ## Installation
-
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
 
 Install the gem and add to the application's Gemfile by executing:
 
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bundle add active_storage-gridfs
 ```
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+gem install active_storage-gridfs
 ```
 
 ## Usage
 
-TODO: Write usage instructions here
+Set up Active Storage in your project using the instructions detailed [here](https://guides.rubyonrails.org/active_storage_overview.html). In [step 2](https://guides.rubyonrails.org/active_storage_overview.html#setup), add the following to your `config/storage.yml`:
+
+```yml
+gridfs:
+  service: GridFS
+  database: your_database_name
+  uri: mongodb://localhost:27017 # or wherever your database is hosted
+  bucket: fs  # optional, defaults to "fs"
+```
+
+For each environment you would like to use GridFS (development/test/production), add the following to `config/environments/[ENVIRONMENT].rb`:
+
+```rb
+# Store files in GridFS.
+config.active_storage.service = :gridfs
+```
 
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/active_storage-gridfs.
