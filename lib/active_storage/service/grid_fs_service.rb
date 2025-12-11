@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "active_storage"
 require "active_storage/service"
+require "active_support/core_ext/numeric/bytes"
 
 module ActiveStorage
   # This service is for interacting with files in a MongoDB GridFS storage.
